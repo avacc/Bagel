@@ -6,11 +6,19 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity"
+    android:background="#000000">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
-
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play Bagel"
+            android:id="@+id/button"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:background="#c9c9c9"
+            style="@style/AppBaseTheme"
+            android:clickable="true"
+            android:enabled="true"
+            android:focusable="true"/>
 </RelativeLayout>
