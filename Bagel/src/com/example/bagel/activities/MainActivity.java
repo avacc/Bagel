@@ -1,4 +1,4 @@
-package com.example.bagel;
+package com.example.bagel.activities;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -8,6 +8,8 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+
+import com.example.bagel.R;
 
 /**
  * Created by Alex on 8/6/13.

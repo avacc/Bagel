@@ -1,4 +1,4 @@
-package com.example.bagel;
+package com.example.bagel.logic;
 
 /**
  * Created by ipedisich on 8/7/13.
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 
-public class Main {
+public class AI {
 
     /**
      * @param args

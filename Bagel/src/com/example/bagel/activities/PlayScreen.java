@@ -1,8 +1,10 @@
-package com.example.bagel;
+package com.example.bagel.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.Button;
+
+import com.example.bagel.R;
 
 public class PlayScreen extends Activity {
 
