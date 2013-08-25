@@ -3,63 +3,63 @@ package com.example.bagel.logic;
 /**
  * Created by ipedisich on 8/7/13.
  */
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import android.content.Context;
+
+import com.example.bagel.R;
+import com.example.bagel.utils.TextUtils;
+
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Scanner;
+
 
 
 public class AI {
 
+    ArrayList<String> dictionary;
+    ArrayList<String> wordsLeft;
+
     /**
-     * @param args
+     * To set up a new AI from scratch at the beginning of a new game
+     * @param ctx   The Context for the application, used to recover resources
      */
-    public static ArrayList<String> setupDict(String dict_file){
-        BufferedReader r;
-        try {
-            r = new BufferedReader(new FileReader(new File(dict_file)));
-            ArrayList<String> goodWords = new ArrayList<String>();
-            while(r.ready())
-            {
-                String line = r.readLine();
-                if (line.trim().length()==5)
-                    goodWords.add(line.trim());
-            }
-            r.close();
-            return goodWords;
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return new ArrayList<String>();
-
+    public AI(Context ctx){
+        dictionary = TextUtils.readTextAsList(ctx, R.raw.dictionary);
+        wordsLeft = dictionary;
     }
 
-    public static boolean playerTurn(ArrayList<String> allWords, String compWord, Scanner s){
-        System.out.println("Guess a word:");
-        String myGuess = s.next();
-        while (!allWords.contains(myGuess)){
-            System.out.println("That word isn't in my dictionary. Guess again:");
-            myGuess = s.next();
-        }
-        if (myGuess.equals(compWord) || myGuess.equals("cheat!")){
-            System.out.println("You win! My word was "+compWord);
-            return true;
-        }
-        System.out.println(countLetters(myGuess, compWord)+" from "+myGuess+" are in my word.");
-        return false;
+    /**
+     * To set up an AI that has already had words removed from its wordlist
+     * @param ctx   The The Context for the application, used to recover resources
+     * @param wordsLeft The words remaining in the dictionary
+     */
+    public AI(Context ctx, ArrayList<String> wordsLeft){
+        dictionary = TextUtils.readTextAsList(ctx, R.raw.dictionary);
+        this.wordsLeft = wordsLeft;
     }
 
-    public static int countLetters(String guess, String realWord){
+    /**
+     * Run every time the computer gets a response from the user with how many letters from
+     * the computer's guess are in the target word. Remakes the dictionary to include only the words
+     * that still fit the criterion
+     * @param compGuess The word that the computer guessed
+     * @param usrAnswer The number of letters in that word that are in the target word
+     */
+    public void makeNewDictionary(String compGuess, int usrAnswer)
+    {
+        ArrayList<char[]> notIn = letterCombos(compGuess, usrAnswer+1);
+        cutDown(notIn, false);
+
+        ArrayList<char[]> orIn = letterCombos(compGuess, usrAnswer);
+        cutDown(orIn, true);
+    }
+
+    /**
+     * Counts the number of letters that overlap between two words
+     * @param guess Word 1
+     * @param realWord  Word 2 (ordering doesn't really matter)
+     * @return  The number of letters of overlap
+     */
+    public int countLetters(String guess, String realWord){
         int numLetters = 0;
         for(char letter:guess.toCharArray()){
             if (realWord.contains(String.valueOf(letter))){
@@ -70,50 +70,15 @@ public class AI {
         return numLetters;
     }
 
-    public static ArrayList<String> compTurn(ArrayList<String> wordsLeft, Scanner s){
-        String guess = wordsLeft.get((int)(Math.random()*(wordsLeft.size()-1)));
-        boolean good = false;
-        int num=0;
-        while(!good){
-            System.out.println("How many letters from "+guess+" are in your word?");
-
-            try{
-                num = s.nextInt();
-                good = true;
-            }catch(Exception e)
-            {
-                good = false;
-            }
-        }
-        if (num==5){
-            String answer = "";
-            while (!answer.toLowerCase().equals("yes") && !answer.toLowerCase().equals("no"))
-            {
-                System.out.println("Is "+guess+" your word?");
-                answer = s.next();
-            }
-            if (answer.toLowerCase().equals("yes")){
-                System.out.println("I WIN!");
-                return new ArrayList<String>();
-            }
-        }
-        ArrayList<char[]> notIn = letterCombos(guess, num+1);
-
-        ArrayList<String> newWordlist = cutDown(notIn, wordsLeft, false);
-
-        ArrayList<char[]> orIn = letterCombos(guess, num);
-        newWordlist = cutDown(orIn, newWordlist, true);
-
-        for(String word:newWordlist){
-            System.out.print(word+",");
-        }
-        System.out.print('\n');
-        return newWordlist;
-    }
-
-    public static ArrayList<String> cutDown(ArrayList<char[]> rule, ArrayList<String> wordlist, boolean allLettersGood){
+    /**
+     * Actually performs the cutting down of the dictionary that the AI contains.
+     * Will have to be changed at some point to allow for making the AI less good.
+     * @param rule  The combination of letters that either all should be or all shouldn't be in the word
+     * @param allLettersGood    Whether all letters should or shouln't be in the word
+     */
+    private void cutDown(ArrayList<char[]> rule, boolean allLettersGood){
         ArrayList<String> newWordlist = new ArrayList<String>();
-        for(String word:wordlist)
+        for(String word:dictionary)
         {
             boolean isOkay = !allLettersGood;
             for(char[] combo:rule)
@@ -135,10 +100,17 @@ public class AI {
             if (isOkay)
                 newWordlist.add(word);
         }
-        return newWordlist;
+        dictionary = newWordlist;
     }
 
-    public static ArrayList<char[]> letterCombos(String word, int length)
+
+    /**
+     * Makes all of the letter combinations of a certain length that occur within the given word
+     * @param word  The given word
+     * @param length    The length of the combinations
+     * @return  All of the combinations
+     */
+    private static ArrayList<char[]> letterCombos(String word, int length)
     {
         ArrayList<char[]> combos = new ArrayList<char[]>();
         if(length==0 || length>word.length())
@@ -165,34 +137,6 @@ public class AI {
             }
         }
         return combos;
-
-    }
-    public static void main(String[] args) {
-        playBagel();
-    }
-    public static void playBagel() {
-        System.out.println("Welcome to bagel!");
-        ArrayList<String> allWords = setupDict("C:\\Users\\ipedisich\\programming\\eclipse\\workspace\\bagelAI\\dict.txt");
-        ArrayList<String> wordsLeft = (ArrayList<String>) allWords.clone();
-        String compWord = wordsLeft.get((int)(Math.random()*(wordsLeft.size()-1)));
-        Scanner s = new Scanner(System.in);
-        boolean showDict = (s.next().startsWith("y"));
-        if (showDict)
-            for(String w:allWords)
-                System.out.println(w);
-        boolean win = playerTurn(allWords, compWord, s);
-        boolean lose = false;
-        while(!win && !lose){
-            wordsLeft = compTurn(wordsLeft, s);
-            if(wordsLeft.size()==0){
-                System.out.println("something messed up");
-            }
-            if(!lose)
-                win = playerTurn(allWords, compWord, s);
-            if(wordsLeft.size()==1)
-                lose = true;
-        }
-        System.out.println("my word was "+compWord);
 
     }
 }
